@@ -100,6 +100,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 The information provided by ZBlock is sourced from publicly available and verified research. While we strive for accuracy and regular updates, users are encouraged to conduct their own research before making purchasing decisions.
 
----
-
-Let me know if you’d like a version with emojis removed or one styled for a documentation site or landing page!
