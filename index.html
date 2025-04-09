@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Checker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --warning-color: #e74c3c;
+            --neutral-color: #95a5a6;
+            --safe-color: #2ecc71;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--neutral-color);
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .search-box {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 50px;
+            overflow: hidden;
+        }
+
+        #search-input {
+            flex-grow: 1;
+            padding: 15px 25px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        #search-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #search-button:hover {
+            background-color: #2980b9;
+        }
+
+        .results-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .results-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .company-card {
+            background-color: var(--card-background);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .company-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .company-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .company-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-right: 20px;
+            background-color: #f1f1f1;
+            padding: 5px;
+        }
+
+        .company-title {
+            flex-grow: 1;
+        }
+
+        .company-name {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .status-avoid {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .status-caution {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .status-good {
+            background-color: var(--safe-color);
+            color: white;
+        }
+
+        .company-details {
+            margin-top: 15px;
+        }
+
+        .company-description {
+            margin-bottom: 20px;
+            line-height: 1.7;
+        }
+
+        .details-item {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .details-label {
+            font-weight: bold;
+            width: 120px;
+            color: var(--secondary-color);
+        }
+
+        .details-value {
+            flex-grow: 1;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: #e0e0e0;
+            padding: 5px 10px;
+            border-radius: 20px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .alternatives-section {
+            margin-top: 15px;
+        }
+
+        .alternatives-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .alternative-item {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        #no-results {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--neutral-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footnote {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .company-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .company-logo {
+                margin-bottom: 15px;
+                margin-right: 0;
+            }
+
+            .details-item {
+                flex-direction: column;
+            }
+
+            .details-label {
+                width: auto;
+                margin-bottom: 5px;
+            }
+        }
+
+        /* Dark mode toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: background-color 0.3s;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: #1a252f;
+        }
+
+        .dark-mode {
+            --background-color: #121212;
+            --card-background: #1e1e1e;
+            --text-color: #e0e0e0;
+            --secondary-color: #3498db;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .toast-message {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Brand Checker</h1>
+            <p class="subtitle">Search for companies and check their ethical status</p>
+        </header>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Enter a company or brand name...">
+                <button id="search-button">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </div>
+
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Searching database...</p>
+        </div>
+
+        <div class="results-container" id="results-container">
+            <!-- Results will be populated here by JavaScript -->
+        </div>
+    </div>
+
+    <div class="dark-mode-toggle" id="dark-mode-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <div class="toast-message" id="toast-message"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            const resultsContainer = document.getElementById('results-container');
+            const loadingElement = document.querySelector('.loading');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+
+            // Data storage
+            let brandsData = null;
+
+            // Load JSON data
+            async function loadData() {
+                try {
+                    const response = await fetch('data.json');
+                    const data = await response.json();
+                    brandsData = data.brands;
+                    showToast('Database loaded successfully');
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    showToast('Failed to load database. Please try refreshing the page.', 'error');
+                }
+            }
+
+            // Initialize
+            loadData();
+
+            // Event listeners
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+
+            // Function to perform search
+            function performSearch() {
+                const query = searchInput.value.trim().toLowerCase();
+                
+                if (!query) {
+                    showToast('Please enter a company or brand name', 'warning');
+                    return;
+                }
+
+                if (!brandsData) {
+                    showToast('Database still loading, please wait...', 'warning');
+                    return;
+                }
+
+                // Show loading
+                loadingElement.style.display = 'block';
+                resultsContainer.classList.remove('show');
+                
+                // Clear previous results
+                resultsContainer.innerHTML = '';
+
+                setTimeout(() => {
+                    // Find matching brands
+                    const results = searchBrands(query);
+                    displayResults(results);
+                    
+                    // Hide loading
+                    loadingElement.style.display = 'none';
+                    resultsContainer.classList.add('show');
+                }, 600); // Slight delay for better UX
+            }
+
+            // Function to search brands
+            function searchBrands(query) {
+                const results = [];
+                
+                for (const brandId in brandsData) {
+                    const brand = brandsData[brandId];
+                    
+                    // Check if brand name or ID includes the query
+                    if (brand.name.toLowerCase().includes(query) || 
+                        brandId.toLowerCase().includes(query)) {
+                        results.push(brand);
+                    }
+                }
+                
+                return results;
+            }
+
+            // Function to display results
+            function displayResults(results) {
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div id="no-results">
+                            <i class="fas fa-search" style="font-size: 3rem; color: var(--neutral-color); margin-bottom: 20px;"></i>
+                            <h2>No results found</h2>
+                            <p>Try searching for another company or brand name</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                results.forEach(brand => {
+                    const card = createBrandCard(brand);
+                    resultsContainer.appendChild(card);
+                });
+            }
+
+            // Function to create a brand card
+            function createBrandCard(brand) {
+                const card = document.createElement('div');
+                card.className = 'company-card';
+
+                // Create the header with logo and title
+                const header = document.createElement('div');
+                header.className = 'company-header';
+
+                // Create logo
+                const logo = document.createElement('img');
+                logo.src = brand.logo_url || '/api/placeholder/80/80';
+                logo.className = 'company-logo';
+                logo.alt = `${brand.name} logo`;
+                logo.onerror = function() {
+                    this.src = '/api/placeholder/80/80';
+                };
+                header.appendChild(logo);
+
+                // Create title section
+                const titleSection = document.createElement('div');
+                titleSection.className = 'company-title';
+
+                const name = document.createElement('h2');
+                name.className = 'company-name';
+                name.textContent = brand.name;
+                titleSection.appendChild(name);
+
+                // Create status badge
+                const status = document.createElement('span');
+                status.className = `status status-${brand.status}`;
+                status.textContent = brand.status;
+                titleSection.appendChild(status);
+
+                header.appendChild(titleSection);
+                card.appendChild(header);
+
+                // Create details section
+                const details = document.createElement('div');
+                details.className = 'company-details';
+
+                // Parse and format description with proper markdown
+                const descriptionHTML = parseMarkdown(brand.description);
+                const description = document.createElement('div');
+                description.className = 'company-description';
+                description.innerHTML = descriptionHTML;
+                details.appendChild(description);
+
+                // Add reasons if they exist
+                if (brand.reasons && brand.reasons.length) {
+                    const reasonsItem = createDetailsItem('Reasons', renderTags(brand.reasons));
+                    details.appendChild(reasonsItem);
+                }
+
+                // Add countries if they exist
+                if (brand.countries && brand.countries.length) {
+                    const countriesItem = createDetailsItem('Markets', renderTags(brand.countries));
+                    details.appendChild(countriesItem);
+                }
+
+                // Add categories if they exist
+                if (brand.categories && brand.categories.length) {
+                    const categoriesItem = createDetailsItem('Categories', renderTags(brand.categories));
+                    details.appendChild(categoriesItem);
+                }
+
+                // Add stakeholders if they exist
+                if (brand.stakeholders && brand.stakeholders.length) {
+                    const stakeholdersHTML = brand.stakeholders.map(s => 
+                        `<span class="tag">${s.id} (${s.type})</span>`
+                    ).join('');
+                    const stakeholdersItem = createDetailsItem('Stakeholders', stakeholdersHTML);
+                    details.appendChild(stakeholdersItem);
+                }
+
+                // Add alternatives if they exist
+                if (brand.alternatives && brand.alternatives.length) {
+                    const alternativesSection = document.createElement('div');
+                    alternativesSection.className = 'alternatives-section';
+                    
+                    const altTitle = document.createElement('h3');
+                    altTitle.textContent = 'Alternative Brands';
+                    alternativesSection.appendChild(altTitle);
+                    
+                    const altList = document.createElement('div');
+                    altList.className = 'alternatives-list';
+                    
+                    brand.alternatives.forEach(alt => {
+                        const altItem = document.createElement('span');
+                        altItem.className = 'alternative-item';
+                        altItem.textContent = alt;
+                        altList.appendChild(altItem);
+                    });
+                    
+                    alternativesSection.appendChild(altList);
+                    details.appendChild(alternativesSection);
+                }
+
+                card.appendChild(details);
+                return card;
+            }
+
+            // Helper function to create details item
+            function createDetailsItem(label, contentHTML) {
+                const item = document.createElement('div');
+                item.className = 'details-item';
+                
+                const labelElement = document.createElement('div');
+                labelElement.className = 'details-label';
+                labelElement.textContent = label;
+                
+                const valueElement = document.createElement('div');
+                valueElement.className = 'details-value';
+                valueElement.innerHTML = contentHTML;
+                
+                item.appendChild(labelElement);
+                item.appendChild(valueElement);
+                
+                return item;
+            }
+
+            // Helper function to render tags
+            function renderTags(items) {
+                return items.map(item => `<span class="tag">${formatTag(item)}</span>`).join('');
+            }
+
+            // Format tag text
+            function formatTag(tag) {
+                return tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+
+            // Parse simple markdown in descriptions
+            function parseMarkdown(text) {
+                if (!text) return '';
+                
+                // Handle bold text
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Handle footnotes
+                text = text.replace(/\[\^(\d+)\]/g, '<sup>[$1]</sup>');
+                
+                // Split by newlines and handle footnote references
+                const lines = text.split('\n');
+                const mainContent = [];
+                const footnotes = [];
+                
+                lines.forEach(line => {
+                    if (line.match(/^\[\^(\d+)\]:/)) {
+                        footnotes.push(line);
+                    } else {
+                        mainContent.push(line);
+                    }
+                });
+                
+                let result = mainContent.join('<br>');
+                
+                // Add footnotes if they exist
+                if (footnotes.length > 0) {
+                    result += '<div class="footnote">';
+                    footnotes.forEach(note => {
+                        // Extract footnote number and content
+                        const match = note.match(/^\[\^(\d+)\]:\s*(.*)/);
+                        if (match) {
+                            const [, num, content] = match;
+                            // Parse URLs in footnotes
+                            const parsedContent = content.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+                            result += `<p><sup>[${num}]</sup> ${parsedContent}</p>`;
+                        }
+                    });
+                    result += '</div>';
+                }
+                
+                return result;
+            }
+
+            // Toast notification
+            function showToast(message, type = 'info') {
+                toastMessage.textContent = message;
+                
+                // Set icon based on type
+                const iconElement = toast.querySelector('.toast-icon i');
+                switch (type) {
+                    case 'error':
+                        iconElement.className = 'fas fa-exclamation-circle';
+                        toast.style.backgroundColor = '#e74c3c';
+                        break;
+                    case 'warning':
+                        iconElement.className = 'fas fa-exclamation-triangle';
+                        toast.style.backgroundColor = '#f39c12';
+                        break;
+                    case 'success':
+                        iconElement.className = 'fas fa-check-circle';
+                        toast.style.backgroundColor = '#2ecc71';
+                        break;
+                    default:
+                        iconElement.className = 'fas fa-info-circle';
+                        toast.style.backgroundColor = '#3498db';
+                }
+                
+                toast.classList.add('show');
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Dark mode toggle
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+                
+                const icon = darkModeToggle.querySelector('i');
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.className = 'fas fa-sun';
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    icon.className = 'fas fa-moon';
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            }
+
+            // Check if dark mode was previously enabled
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.querySelector('i').className = 'fas fa-sun';
+            }
+        });
+    </script>
+</body>
+</html>
