@@ -1,8 +1,4 @@
-Got it! Here's an **upgraded and interactive README** for your project, now using your product's actual name **ZBlock** and updated description. This version is designed to look polished, readable, and appealing for GitHub users:
-
----
-
-# 🛑 ZBlock – Ethical Brand Checker  
+# 🛑 ZBlock – Anti-Zionism Shopping Search  
 **Search brands. Check affiliations. Shop with awareness.**  
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)  
